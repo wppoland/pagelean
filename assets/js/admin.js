@@ -45,6 +45,10 @@
 		if ( note ) {
 			note.hidden = uses;
 		}
+		var postType = row.querySelector( 'select[name$="[post_type]"]' );
+		if ( postType ) {
+			postType.disabled = select.value !== 'single_post_type';
+		}
 	} );
 
 	rows.addEventListener( 'click', function ( e ) {

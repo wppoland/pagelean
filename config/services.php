@@ -11,6 +11,7 @@ declare(strict_types=1);
 use PloginsAssets\Admin\SettingsPage;
 use PloginsAssets\Container;
 use PloginsAssets\Frontend\AssetManager;
+use PloginsAssets\Frontend\HandleDiscovery;
 use PloginsAssets\Migrator;
 use PloginsAssets\Settings\SettingsRepository;
 
@@ -25,7 +26,10 @@ return static function (Container $c): void {
         $c->get(SettingsRepository::class),
     ));
 
+    $c->singleton(HandleDiscovery::class, static fn (): HandleDiscovery => new HandleDiscovery());
+
     $c->singleton(SettingsPage::class, static fn (Container $c): SettingsPage => new SettingsPage(
         $c->get(SettingsRepository::class),
+        $c->get(HandleDiscovery::class),
     ));
 };

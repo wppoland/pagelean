@@ -13,10 +13,12 @@ declare(strict_types=1);
 
 use PloginsAssets\Admin\SettingsPage;
 use PloginsAssets\Frontend\AssetManager;
+use PloginsAssets\Frontend\HandleDiscovery;
 
 defined('ABSPATH') || exit;
 
 return [
     AssetManager::class,
+    HandleDiscovery::class,
     SettingsPage::class,
 ];
