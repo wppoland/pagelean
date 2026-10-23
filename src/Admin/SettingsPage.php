@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace PloginsAssets\Admin;
 
 use PloginsAssets\Contract\HasHooks;
+use PloginsAssets\Frontend\HandleDiscovery;
 use PloginsAssets\Settings\SettingsRepository;
 
 defined('ABSPATH') || exit;
@@ -18,8 +19,12 @@ final class SettingsPage implements HasHooks
     private const SLUG   = 'pagelean';
     private const ACTION = 'plogins_assets_save';
 
-    public function __construct(private readonly SettingsRepository $settings)
-    {
+    private const EMPTY_RULE = ['handle' => '', 'type' => 'script', 'condition' => 'everywhere', 'ids' => [], 'post_type' => '', 'deregister' => false];
+
+    public function __construct(
+        private readonly SettingsRepository $settings,
+        private readonly HandleDiscovery $discovery,
+    ) {
     }
 
     public function registerHooks(): void
@@ -27,6 +32,26 @@ final class SettingsPage implements HasHooks
         add_action('admin_menu', [$this, 'addMenu']);
         add_action('admin_post_' . self::ACTION, [$this, 'save']);
         add_action('admin_enqueue_scripts', [$this, 'assets']);
+        add_action('admin_notices', [$this, 'testModeNotice']);
+    }
+
+    /**
+     * Shown on every admin screen while test mode is on, so nobody forgets the
+     * rules are not reaching visitors yet.
+     */
+    public function testModeNotice(): void
+    {
+        if (! current_user_can('manage_options') || ! $this->settings->isEnabled() || ! $this->settings->isTestMode()) {
+            return;
+        }
+
+        printf(
+            '<div class="notice notice-warning"><p><strong>%1$s</strong> %2$s <a href="%3$s">%4$s</a></p></div>',
+            esc_html__('Pagelean test mode is on.', 'pagelean'),
+            esc_html__('Rules apply only to logged-in administrators. Visitors still get every script and style.', 'pagelean'),
+            esc_url(admin_url('admin.php?page=' . self::SLUG)),
+            esc_html__('Turn it off when the pages look right.', 'pagelean')
+        );
     }
 
     public function addMenu(): void
@@ -71,7 +96,8 @@ final class SettingsPage implements HasHooks
 
         check_admin_referer(self::ACTION);
 
-        $enabled = ! empty($_POST['enabled']);
+        $enabled  = ! empty($_POST['enabled']);
+        $testMode = ! empty($_POST['test_mode']);
 
         // Every field is single-line text, sanitised here on read; the
         // repository's normalizeRules() then validates each one.
@@ -79,7 +105,7 @@ final class SettingsPage implements HasHooks
             ? map_deep(wp_unslash($_POST['rules']), 'sanitize_text_field')
             : [];
 
-        $this->settings->save($enabled, $rawRules);
+        $this->settings->save($enabled, $rawRules, $testMode);
 
         wp_safe_redirect(add_query_arg(
             ['page' => self::SLUG, 'updated' => '1'],
@@ -94,11 +120,12 @@ final class SettingsPage implements HasHooks
             return;
         }
 
-        $enabled = $this->settings->isEnabled();
-        $rules   = $this->settings->rules();
+        $enabled  = $this->settings->isEnabled();
+        $testMode = $this->settings->isTestMode();
+        $rules    = $this->settings->rules();
         if ([] === $rules) {
             // One empty starter row so the table is never blank.
-            $rules = [['handle' => '', 'type' => 'script', 'condition' => 'everywhere', 'ids' => []]];
+            $rules = [self::EMPTY_RULE];
         }
 
         ?>
@@ -127,6 +154,15 @@ final class SettingsPage implements HasHooks
                         <strong><?php esc_html_e('Enable conditional asset loading', 'pagelean'); ?></strong>
                     </label>
                 </p>
+                <p>
+                    <label>
+                        <input type="checkbox" name="test_mode" value="1" aria-describedby="plogins-assets-test-mode-desc" <?php checked($testMode); ?>>
+                        <strong><?php esc_html_e('Test mode', 'pagelean'); ?></strong>
+                    </label>
+                    <span id="plogins-assets-test-mode-desc" class="description">
+                        <?php esc_html_e('Apply the rules only for logged-in administrators. Everyone else gets the untouched page, so you can check the front end before visitors see the change.', 'pagelean'); ?>
+                    </span>
+                </p>
 
                 <table class="widefat plogins-assets-rules">
                     <thead>
@@ -135,6 +171,8 @@ final class SettingsPage implements HasHooks
                             <th><?php esc_html_e('Type', 'pagelean'); ?></th>
                             <th><?php esc_html_e('Remove when', 'pagelean'); ?></th>
                             <th><?php esc_html_e('Post/Page IDs', 'pagelean'); ?></th>
+                            <th><?php esc_html_e('Post type', 'pagelean'); ?></th>
+                            <th><?php esc_html_e('Also deregister', 'pagelean'); ?></th>
                             <th></th>
                         </tr>
                     </thead>
@@ -157,18 +195,19 @@ final class SettingsPage implements HasHooks
             </form>
 
             <template id="plogins-assets-template">
-                <?php $this->renderRow(0, ['handle' => '', 'type' => 'script', 'condition' => 'everywhere', 'ids' => []], true); ?>
+                <?php $this->renderRow(0, self::EMPTY_RULE, true); ?>
             </template>
         </div>
         <?php
     }
 
     /**
-     * @param array{handle: string, type: string, condition: string, ids: array<int, int>} $rule
+     * @param array{handle: string, type: string, condition: string, ids: array<int, int>, post_type: string, deregister: bool} $rule
      */
     private function renderRow(int $index, array $rule, bool $template = false): void
     {
         $name = $template ? 'rules[__INDEX__]' : 'rules[' . $index . ']';
+        $hasWc = function_exists('is_shop');
         ?>
         <tr class="plogins-assets-row">
             <td>
@@ -186,6 +225,13 @@ final class SettingsPage implements HasHooks
             <td>
                 <select name="<?php echo esc_attr($name); ?>[condition]">
                     <?php foreach ($this->settings->conditions() as $cond) : ?>
+                        <?php
+                        // WooCommerce conditions only while WooCommerce runs, but a
+                        // saved rule keeps its own condition visible.
+                        if (! $hasWc && $cond !== $rule['condition'] && in_array($cond, SettingsRepository::WC_CONDITIONS, true)) {
+                            continue;
+                        }
+                        ?>
                         <option value="<?php echo esc_attr($cond); ?>" <?php selected($rule['condition'], $cond); ?>>
                             <?php echo esc_html($this->conditionLabel($cond)); ?>
                         </option>
@@ -209,6 +255,21 @@ final class SettingsPage implements HasHooks
                     <?php esc_html_e('Used only by the two single posts/pages conditions.', 'pagelean'); ?>
                 </span>
             </td>
+            <?php $usesPostType = 'single_post_type' === $rule['condition']; ?>
+            <td>
+                <select name="<?php echo esc_attr($name); ?>[post_type]" aria-label="<?php esc_attr_e('Post type', 'pagelean'); ?>" <?php disabled(! $usesPostType); ?>>
+                    <option value=""><?php esc_html_e('Choose a post type', 'pagelean'); ?></option>
+                    <?php foreach ($this->settings->publicPostTypes() as $slug => $label) : ?>
+                        <option value="<?php echo esc_attr($slug); ?>" <?php selected($rule['post_type'], $slug); ?>><?php echo esc_html($label); ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </td>
+            <td>
+                <label>
+                    <input type="checkbox" name="<?php echo esc_attr($name); ?>[deregister]" value="1" <?php checked($rule['deregister']); ?>>
+                    <span class="screen-reader-text"><?php esc_html_e('Also deregister the handle', 'pagelean'); ?></span>
+                </label>
+            </td>
             <td>
                 <button type="button" class="button-link plogins-assets-remove" aria-label="<?php esc_attr_e('Remove rule', 'pagelean'); ?>">&times;</button>
             </td>
@@ -226,26 +287,57 @@ final class SettingsPage implements HasHooks
             'not_singular' => __('Except single posts/pages (matching IDs)', 'pagelean'),
             'mobile'       => __('On mobile devices', 'pagelean'),
             'desktop'      => __('On desktop devices', 'pagelean'),
+            'single_post_type' => __('On single entries of a post type', 'pagelean'),
+            'wc_shop'      => __('On the WooCommerce shop page', 'pagelean'),
+            'wc_product'   => __('On WooCommerce product pages', 'pagelean'),
+            'wc_cart'      => __('On the WooCommerce cart', 'pagelean'),
+            'wc_checkout'  => __('On the WooCommerce checkout', 'pagelean'),
         ];
 
         return $labels[$cond] ?? $cond;
     }
 
     /**
-     * A datalist of currently registered handles so admins get autocomplete
-     * hints instead of guessing. It is only a hint; any handle can be typed.
+     * A datalist of handle hints so admins get autocomplete instead of guessing.
+     * Front-end handles recorded by HandleDiscovery come first (with their
+     * source file as the label); handles registered on this admin request fill
+     * the rest. It is only a hint; any handle can be typed.
      */
     private function renderHandleHints(): void
     {
-        $handles = array_keys(wp_scripts()->registered);
-        $handles = array_merge($handles, array_keys(wp_styles()->registered));
-        $handles = array_values(array_unique($handles));
-        sort($handles);
+        $hints = [];
+        foreach ($this->discovery->seen() as $key => $src) {
+            [$type, $handle] = array_pad(explode('|', (string) $key, 2), 2, '');
+            if ('' === $handle || isset($hints[$handle])) {
+                continue;
+            }
+            $kind           = 'style' === $type ? __('Style', 'pagelean') : __('Script', 'pagelean');
+            $hints[$handle] = '' === $src ? $kind : $kind . ': ' . $src;
+        }
+        $frontCount = count($hints);
+
+        $registered = array_merge(array_keys(wp_scripts()->registered), array_keys(wp_styles()->registered));
+        foreach ($registered as $handle) {
+            $hints[(string) $handle] ??= '';
+        }
+        ksort($hints);
 
         echo '<datalist id="plogins-assets-handles">';
-        foreach ($handles as $handle) {
-            echo '<option value="' . esc_attr((string) $handle) . '"></option>';
+        foreach ($hints as $handle => $label) {
+            echo '<option value="' . esc_attr((string) $handle) . '"' . ('' === $label ? '' : ' label="' . esc_attr($label) . '"') . '></option>';
         }
         echo '</datalist>';
+
+        echo '<p class="description">';
+        if (0 === $frontCount) {
+            esc_html_e('Tip: visit a few pages of your site while logged in as an administrator. Pagelean records the scripts and styles they load and suggests them here.', 'pagelean');
+        } else {
+            echo esc_html(sprintf(
+                /* translators: %d: number of handles recorded on the front end */
+                _n('%d handle recorded from your front-end pages is suggested as you type. Visit more pages to add more.', '%d handles recorded from your front-end pages are suggested as you type. Visit more pages to add more.', $frontCount, 'pagelean'),
+                $frontCount
+            ));
+        }
+        echo '</p>';
     }
 }

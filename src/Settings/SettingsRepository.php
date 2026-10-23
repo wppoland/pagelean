@@ -27,7 +27,15 @@ final class SettingsRepository
         'not_singular',  // everything except single posts/pages (or except ids)
         'mobile',        // wp_is_mobile() is true
         'desktop',       // wp_is_mobile() is false
+        'single_post_type', // a single entry of one public post type
+        'wc_shop',       // WooCommerce shop page
+        'wc_product',    // WooCommerce single product
+        'wc_cart',       // WooCommerce cart
+        'wc_checkout',   // WooCommerce checkout
     ];
+
+    /** Conditions that only make sense while WooCommerce is active. */
+    public const WC_CONDITIONS = ['wc_shop', 'wc_product', 'wc_cart', 'wc_checkout'];
 
     /**
      * The only conditions AssetManager::matches() reads the ids list for. Every
@@ -55,9 +63,33 @@ final class SettingsRepository
     }
 
     /**
+     * Test mode: rules apply only to logged-in administrators, every other
+     * visitor gets the untouched page.
+     */
+    public function isTestMode(): bool
+    {
+        return (bool) ($this->settings()['test_mode'] ?? false);
+    }
+
+    /**
+     * Public post types a "single of post type" rule may target.
+     *
+     * @return array<string, string> slug => label
+     */
+    public function publicPostTypes(): array
+    {
+        $types = [];
+        foreach (get_post_types(['public' => true], 'objects') as $slug => $obj) {
+            $types[(string) $slug] = (string) $obj->labels->singular_name;
+        }
+
+        return $types;
+    }
+
+    /**
      * The configured rules, already normalised to canonical shape.
      *
-     * @return array<int, array{handle: string, type: string, condition: string, ids: array<int, int>}>
+     * @return array<int, array{handle: string, type: string, condition: string, ids: array<int, int>, post_type: string, deregister: bool}>
      */
     public function rules(): array
     {
@@ -87,11 +119,16 @@ final class SettingsRepository
         return $merged;
     }
 
-    public function save(bool $enabled, mixed $rawRules): void
+    /**
+     * @param bool|null $testMode Null keeps the stored value (callers that only
+     *                            touch the rules, such as the PRO add-on).
+     */
+    public function save(bool $enabled, mixed $rawRules, ?bool $testMode = null): void
     {
         update_option(self::OPTION, [
-            'enabled' => $enabled,
-            'rules'   => $this->normalizeRules($rawRules),
+            'enabled'   => $enabled,
+            'test_mode' => $testMode ?? $this->isTestMode(),
+            'rules'     => $this->normalizeRules($rawRules),
         ]);
     }
 
@@ -100,13 +137,15 @@ final class SettingsRepository
      * row without a handle.
      *
      * @param mixed $raw
-     * @return array<int, array{handle: string, type: string, condition: string, ids: array<int, int>}>
+     * @return array<int, array{handle: string, type: string, condition: string, ids: array<int, int>, post_type: string, deregister: bool}>
      */
     public function normalizeRules(mixed $raw): array
     {
         if (! is_array($raw)) {
             return [];
         }
+
+        $postTypes = null;
 
         $rules = [];
         foreach ($raw as $row) {
@@ -136,11 +175,23 @@ final class SettingsRepository
                 ? $this->normalizeIds($row['ids'] ?? '')
                 : [];
 
+            // Allowlisted against the public post types; anything else is
+            // stored empty so the rule matches nothing and the select shows
+            // "Choose a post type" instead of pretending to be in force.
+            $postType = '';
+            if ('single_post_type' === $condition) {
+                $postTypes ??= $this->publicPostTypes();
+                $candidate = sanitize_key((string) ($row['post_type'] ?? ''));
+                $postType  = isset($postTypes[$candidate]) ? $candidate : '';
+            }
+
             $rules[] = [
-                'handle'    => $handle,
-                'type'      => $type,
-                'condition' => $condition,
-                'ids'       => $ids,
+                'handle'     => $handle,
+                'type'       => $type,
+                'condition'  => $condition,
+                'ids'        => $ids,
+                'post_type'  => $postType,
+                'deregister' => ! empty($row['deregister']),
             ];
         }
 
