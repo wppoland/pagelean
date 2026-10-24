@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: Plogins Assets - Conditional Script & Style Loading "
 "1.0.0\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/pagelean\n"
-"POT-Creation-Date: 2026-10-06T03:55:12+00:00\n"
+"POT-Creation-Date: 2026-10-23T12:09:20+00:00\n"
 "PO-Revision-Date: 2026-07-16T08:26:31+00:00\n"
 "Last-Translator: motylanogha <szatkowski.mariusz@gmail.com>\n"
 "Language-Team: Polish <pl@li.org>\n"
@@ -49,16 +49,30 @@ msgstr "WPPoland.com"
 msgid "https://wppoland.com"
 msgstr "https://wppoland.com"
 
-#: src/Admin/SettingsPage.php:35 src/Admin/SettingsPage.php:36
-#: src/Admin/SettingsPage.php:106
+#: src/Admin/SettingsPage.php:50
+msgid "Pagelean test mode is on."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:51
+msgid ""
+"Rules apply only to logged-in administrators. Visitors still get every "
+"script and style."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:53
+msgid "Turn it off when the pages look right."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:60 src/Admin/SettingsPage.php:61
+#: src/Admin/SettingsPage.php:133
 msgid "Pagelean"
 msgstr "Pagelean"
 
-#: src/Admin/SettingsPage.php:69
+#: src/Admin/SettingsPage.php:94
 msgid "You are not allowed to do this."
 msgstr "Nie wolno Ci tego robić."
 
-#: src/Admin/SettingsPage.php:108
+#: src/Admin/SettingsPage.php:135
 msgid ""
 "Remove specific scripts and styles from the pages that do not need them. "
 "Lighter pages load faster."
@@ -66,11 +80,11 @@ msgstr ""
 "Usuń określone skrypty i style ze stron, które ich nie potrzebują. Lżejsze "
 "strony ładują się szybciej."
 
-#: src/Admin/SettingsPage.php:113
+#: src/Admin/SettingsPage.php:140
 msgid "Settings saved."
 msgstr "Ustawienia zapisane."
 
-#: src/Admin/SettingsPage.php:117
+#: src/Admin/SettingsPage.php:144
 msgid ""
 "Removing a handle that another script depends on can break page "
 "functionality. Change one rule at a time and check the front end."
@@ -79,85 +93,159 @@ msgstr ""
 "uszkodzenie funkcjonalności strony. Zmieniaj jedną regułę na raz i sprawdzaj "
 "przód."
 
-#: src/Admin/SettingsPage.php:127
+#: src/Admin/SettingsPage.php:154
 msgid "Enable conditional asset loading"
 msgstr "Włącz warunkowe ładowanie zasobów"
 
-#: src/Admin/SettingsPage.php:134
+#: src/Admin/SettingsPage.php:160
+msgid "Test mode"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:163
+msgid ""
+"Apply the rules only for logged-in administrators. Everyone else gets the "
+"untouched page, so you can check the front end before visitors see the "
+"change."
+msgstr ""
+
+#: src/Admin/SettingsPage.php:170
 msgid "Handle"
 msgstr "Uchwyt"
 
-#: src/Admin/SettingsPage.php:135
+#: src/Admin/SettingsPage.php:171
 msgid "Type"
 msgstr "Typ"
 
-#: src/Admin/SettingsPage.php:136
+#: src/Admin/SettingsPage.php:172
 msgid "Remove when"
 msgstr "Usuń kiedy"
 
-#: src/Admin/SettingsPage.php:137
+#: src/Admin/SettingsPage.php:173
 msgid "Post/Page IDs"
 msgstr "Identyfikatory postów/stron"
 
-#: src/Admin/SettingsPage.php:150
+#: src/Admin/SettingsPage.php:174 src/Admin/SettingsPage.php:260
+msgid "Post type"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:175
+msgid "Also deregister"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:188
 msgid "+ Add rule"
 msgstr "+ Dodaj regułę"
 
-#: src/Admin/SettingsPage.php:156
+#: src/Admin/SettingsPage.php:194
 msgid "Save rules"
 msgstr "Zapisz zasady"
 
-#: src/Admin/SettingsPage.php:178
+#: src/Admin/SettingsPage.php:217
 msgid "e.g. contact-form-7"
 msgstr "np. formularz kontaktowy-7"
 
-#: src/Admin/SettingsPage.php:182
+#: src/Admin/SettingsPage.php:221
 msgid "Script (JS)"
 msgstr "Skrypt (JS)"
 
-#: src/Admin/SettingsPage.php:183
+#: src/Admin/SettingsPage.php:222
 msgid "Style (CSS)"
 msgstr "Styl (CSS)"
 
-#: src/Admin/SettingsPage.php:206
+#: src/Admin/SettingsPage.php:252
 msgid "optional, e.g. 12, 34"
 msgstr "opcjonalne, np. 12, 34"
 
-#: src/Admin/SettingsPage.php:209
+#: src/Admin/SettingsPage.php:255
 msgid "Used only by the two single posts/pages conditions."
 msgstr "Używane tylko przez dwa warunki dotyczące pojedynczych wpisów/stron."
 
-#: src/Admin/SettingsPage.php:213
+#: src/Admin/SettingsPage.php:261
+msgid "Choose a post type"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:270
+msgid "Also deregister the handle"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:274
 msgid "Remove rule"
 msgstr "Usuń regułę"
 
-#: src/Admin/SettingsPage.php:222
+#: src/Admin/SettingsPage.php:283
 msgid "Everywhere"
 msgstr "Wszędzie"
 
-#: src/Admin/SettingsPage.php:223
+#: src/Admin/SettingsPage.php:284
 msgid "On the front page"
 msgstr "Na pierwszej stronie"
 
-#: src/Admin/SettingsPage.php:224
+#: src/Admin/SettingsPage.php:285
 msgid "On the blog posts index"
 msgstr "W indeksie wpisów na blogu"
 
-#: src/Admin/SettingsPage.php:225
+#: src/Admin/SettingsPage.php:286
 msgid "On single posts/pages (matching IDs)"
 msgstr "Na pojedynczych postach/stronach (pasujące identyfikatory)"
 
-#: src/Admin/SettingsPage.php:226
+#: src/Admin/SettingsPage.php:287
 msgid "Except single posts/pages (matching IDs)"
 msgstr "Z wyjątkiem pojedynczych postów/stron (pasujące identyfikatory)"
 
-#: src/Admin/SettingsPage.php:227
+#: src/Admin/SettingsPage.php:288
 msgid "On mobile devices"
 msgstr "Na urządzeniach mobilnych"
 
-#: src/Admin/SettingsPage.php:228
+#: src/Admin/SettingsPage.php:289
 msgid "On desktop devices"
 msgstr "Na urządzeniach stacjonarnych"
+
+#: src/Admin/SettingsPage.php:290
+msgid "On single entries of a post type"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:291
+msgid "On the WooCommerce shop page"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:292
+msgid "On WooCommerce product pages"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:293
+msgid "On the WooCommerce cart"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:294
+msgid "On the WooCommerce checkout"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:314
+msgid "Style"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:314
+msgid "Script"
+msgstr ""
+
+#: src/Admin/SettingsPage.php:333
+msgid ""
+"Tip: visit a few pages of your site while logged in as an administrator. "
+"Pagelean records the scripts and styles they load and suggests them here."
+msgstr ""
+
+#. translators: %d: number of handles recorded on the front end
+#: src/Admin/SettingsPage.php:337
+#, php-format
+msgid ""
+"%d handle recorded from your front-end pages is suggested as you type. Visit "
+"more pages to add more."
+msgid_plural ""
+"%d handles recorded from your front-end pages are suggested as you type. "
+"Visit more pages to add more."
+msgstr[0] ""
+msgstr[1] ""
+msgstr[2] ""
 
 #~ msgid "Plogins Assets"
 #~ msgstr "Zasoby Ploginów"
