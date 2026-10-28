@@ -7,7 +7,7 @@ cd "$(dirname "$0")/.."
 
 REPO="wppoland/plogins-assets"
 DESC="Conditional script & style loading for WordPress - dequeue assets per page for a lighter, faster front end."
-HOME_URL="https://plogins.com/plogins-assets/"
+HOME_URL="https://plogins.com/pagelean/"
 
 # Create the repo (public) if it does not exist yet.
 if gh repo view "$REPO" >/dev/null 2>&1; then

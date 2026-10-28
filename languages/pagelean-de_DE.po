@@ -24,8 +24,8 @@ msgstr "Pagelean - Bedingtes Laden von Skripten und Stilen"
 
 #. Plugin URI of the plugin
 #: pagelean.php
-msgid "https://plogins.com/plogins-assets/"
-msgstr "https://plogins.com/plogins-assets/"
+msgid "https://plogins.com/pagelean/"
+msgstr "https://plogins.com/pagelean/"
 
 #. Description of the plugin
 #: pagelean.php
