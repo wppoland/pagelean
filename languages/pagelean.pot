@@ -21,7 +21,7 @@ msgstr ""
 
 #. Plugin URI of the plugin
 #: pagelean.php
-msgid "https://plogins.com/plogins-assets/"
+msgid "https://plogins.com/pagelean/"
 msgstr ""
 
 #. Description of the plugin
