@@ -78,7 +78,7 @@ No. Rules apply on the front end only.
 == Changelog ==
 
 = 1.2.2 =
-* Fixed: deleting the plugin now removes its settings, rules and the list of seen script and style handles, on every site of a multisite network.
+* Fixed: deleting the plugin now removes its settings, rules and the list of seen script and style handles, on every site of a multisite network. While an add-on that stores rules in the same settings is installed, those settings stay.
 
 = 1.2.1 =
 * Links point at the new plogins.com address.

@@ -19,7 +19,7 @@ if (! function_exists('get_plugins')) {
     require_once ABSPATH . 'wp-admin/includes/plugin.php';
 }
 wp_cache_delete('plugins', 'plugins');
-$plogins_assets_addon_installed = in_array('pagelean-pro', array_column(get_plugins(), 'TextDomain'), true);
+$plogins_assets_addon_installed = (bool) array_intersect(['pagelean-pro', 'plogins-assets-pro'], array_column(get_plugins(), 'TextDomain'));
 
 // Clean the current site. A closure rather than a named function, so the file
 // can be included more than once in a request.
