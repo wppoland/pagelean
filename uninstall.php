@@ -15,9 +15,6 @@ defined('WP_UNINSTALL_PLUGIN') || exit;
 // with no add-on on disk it is ours. Matched on the text domain, so a renamed
 // folder still counts. A bulk delete runs both uninstalls in one request and the
 // plugin list is cached per request, so drop the cache first.
-if (! function_exists('get_plugins')) {
-    require_once ABSPATH . 'wp-admin/includes/plugin.php';
-}
 wp_cache_delete('plugins', 'plugins');
 $plogins_assets_addon_installed = (bool) array_intersect(['pagelean-pro', 'plogins-assets-pro'], array_column(get_plugins(), 'TextDomain'));
 
