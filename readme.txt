@@ -4,7 +4,7 @@ Tags: performance, scripts, optimization, unload css, dequeue
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 1.2.2
+Stable tag: 1.2.3
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -76,6 +76,9 @@ No. Rules apply on the front end only.
 1. The rule table: remove a handle on the pages that do not need it.
 
 == Changelog ==
+
+= 1.2.3 =
+* Uninstall no longer loads a WordPress core file itself; WordPress has already loaded it when it runs the uninstall.
 
 = 1.2.2 =
 * Fixed: deleting the plugin now removes its settings, rules and the list of seen script and style handles, on every site of a multisite network. While an add-on that stores rules in the same settings is installed, those settings stay.
