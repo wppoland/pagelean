@@ -4,7 +4,7 @@ Tags: performance, scripts, optimization, unload css, dequeue
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 1.2.3
+Stable tag: 1.2.4
 License: GPL-2.0-or-later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -76,6 +76,9 @@ No. Rules apply on the front end only.
 1. The rule table: remove a handle on the pages that do not need it.
 
 == Changelog ==
+
+= 1.2.4 =
+* Plugins list shows a shortcut to the settings screen.
 
 = 1.2.3 =
 * Uninstall no longer loads a WordPress core file itself; WordPress has already loaded it when it runs the uninstall.
